@@ -76,5 +76,12 @@ X1<-ggplot(data = NMDS, aes(MDS1, MDS2)) + geom_point(aes(color = Treatment),siz
     geom_path(data=df_ell, aes(x=MDS1, y=MDS2,colour=group), size=2, linetype=5)+theme_bw()+theme(aspect.ratio=1)+scale_color_manual(values=COLORS)+theme(axis.text.x=element_text(size=20),axis.text.y=element_text(size=20),axis.title.x=element_text(size=20),axis.title.y=element_text(size=20))+theme(legend.title=element_text(size=15),legend.text=element_text(size=15))
 X1    
 }
-#doing the mds for crop*date based on composition (or structure depending on who is defining it)
-mds<-metaMDS()
+
+# doing the mds for crop*date based on composition (or structure depending on who is defining it)
+mds<-metaMDS(decostand(data.nosing.rar[,-c(1:5)],"total"),k=3,autotransform=FALSE)
+ggplot.NMDS(mds, (paste(data.nosing.rar$Date,data.nosing.rar$Crop)), rainbow(6))
+
+# doing the mds for soilfrac based on p/a 
+mds<-metaMDS(decostand(data.nosing.rar[,-c(1:5)],"pa"),k=2,autotransform=FALSE)
+ggplot.NMDS(mds,data.nosing.rar$SoilFrac, rainbow(5))
+
