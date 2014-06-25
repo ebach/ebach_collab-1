@@ -23,12 +23,30 @@ dataset<-read.csv(file.choose())
 
 data.nosing<-cbind(dataset[,1:5],dropspc(dataset[,6:9538],1))
 
-#figure out how many samples to rarefy by
-summary(rowSums(data.nosing[,-c(1:5)]))
+# Now its time to figure out how many reads to rarefy by...I added a column to our dataset of the total number of reads per sample (row)
+
 reads<-rowSums(data.nosing[,-c(1:5)])
 data.nosing.reads<-cbind(reads,data.nosing)
+
 hist(reads)
-rared<-rarefy(subset(data.nosing.reads, reads > 1999)[,-c(1:6)],sample=c(1,10,100,250,500,750,1000,2000),se=FALSE )
-rared_melt<-melt(rared)
-summary(rared_melt)
+# the distribution of reads isn't that skewed...this makes it difficult to decide how many samples to rarefy by...
+
+#we can see how many samples we have by subsetting by number of reads
+
 dim(subset(data.nosing.reads, reads > 999))
+
+# we maintain a high level of samples with a rarefication at 1000
+
+# lets create rarefaction curves for each sample starting around 1000
+rared<-rarefy(subset(data.nosing.reads, reads > 1499)[,-c(1:6)],sample=c(1,10,25,50,75,100,250,500,750,1000,1250,1500),se=FALSE )
+rared_melt<-melt(rared)
+names(rared_melt)<-c("sample","sample_size","OTUs")
+rared_melt$sample_size<-c(rep(1,97),rep(10,97),rep(25,97),rep(50,97),rep(75,97),rep(100,97),rep(250,97),rep(500,97),rep(750,97),rep(1000,97),rep(1250,97),rep(1500,97))
+head(rared_melt)
+
+ggplot(rared_melt)+geom_line(aes(x=sample_size,y=OTUs,colour=sample,group=sample))+theme(aspect.ratio=1)+theme_bw()
+
+# I will decide with 1000 (100 samples) and do a sensitivity analysis to see if moving this number changes the results
+head(data.nosing[,1:5])
+data.nosing.rar<-cbind(subset(data.nosing, reads > 999)[,1:5],rrarefy(subset(data.nosing,reads > 999)[,-c(1:5)],1000))
+head(data.nosing[,1:10])
