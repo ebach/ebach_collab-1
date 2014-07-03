@@ -78,10 +78,11 @@ X1
 }
 
 # doing the mds for crop*date based on composition (or structure depending on who is defining it)
-mds<-metaMDS(decostand(data.nosing.rar[,-c(1:5)],"total"),k=3,autotransform=FALSE)
-ggplot.NMDS(mds, (paste(data.nosing.rar$Date,data.nosing.rar$Crop)), rainbow(6))
-
+mds<-metaMDS(decostand(subset(data.nosing.reads, reads>100)[,-c(1:6)],"pa" ),k=6,autotransform=FALSE)
+ggplot.NMDS(mds, (subset(data.nosing.reads, reads>100)$Crop), rainbow(3))
+fig_16S<-ggplot.NMDS(mds, (data.nosing.rar$Crop), rainbow(3))
 # doing the mds for soilfrac based on p/a 
 mds<-metaMDS(decostand(data.nosing.rar[,-c(1:5)],"pa"),k=2,autotransform=FALSE)
 ggplot.NMDS(mds,data.nosing.rar$SoilFrac, rainbow(5))
+
 
