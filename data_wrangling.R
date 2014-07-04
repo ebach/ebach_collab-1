@@ -27,6 +27,7 @@ data.nosing<-cbind(dataset[,1:5],dropspc(dataset[,6:9538],1))
 
 reads<-rowSums(data.nosing[,-c(1:5)])
 data.nosing.reads<-cbind(reads,data.nosing)
+head(data.nosing.reads[,1:10])
 
 hist(reads)
 # the distribution of reads isn't that skewed...this makes it difficult to decide how many samples to rarefy by...

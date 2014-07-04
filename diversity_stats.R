@@ -23,7 +23,7 @@ TukeyHSD(test)
 ggplot(div_stats)+geom_boxplot(aes(x=SoilFrac, y=richness))
 
 head(data.nosing.rar[,1:10])
-data_melt<-melt(data.nosing.rar, id=c("SampleName","Date","CropBlock","Crop","SoilFrac"))
+data_melt<-melt(data.nosing.rar.2, id=c("SampleName","Date","CropBlock","Crop","SoilFrac","trt"))
 taxonomy<-read.csv(file.choose())
 head(taxonomy)
 head(data_melt)
