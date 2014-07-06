@@ -48,6 +48,7 @@ adonis(data.trans.rar[,-c(1:5)]~data.trans.rar$Date*data.trans.rar$Crop+data.tra
 
 
 # run this code
+# EBach:  I assume this MDS is for the seqeunce "abundance" data?
 ggplot.NMDS<-function(XX,ZZ,COLORS){
 	library(ggplot2)
 MDS1<-data.frame(scores(XX))$NMDS1
@@ -81,6 +82,9 @@ X1
 mds<-metaMDS(decostand(subset(data.nosing.reads, reads>100)[,-c(1:6)],"pa" ),k=6,autotransform=FALSE)
 ggplot.NMDS(mds, (subset(data.nosing.reads, reads>100)$Crop), rainbow(3))
 fig_16S<-ggplot.NMDS(mds, (data.nosing.rar$Crop), rainbow(3))
+#EBach, I get an error on the "fig_16S" saying MDS1, MDS2, and Treatment have differing number of rows (114 vs. 100)
+#also, should be fig_ITS?
+
 # doing the mds for soilfrac based on p/a 
 mds<-metaMDS(decostand(data.nosing.rar[,-c(1:5)],"pa"),k=2,autotransform=FALSE)
 ggplot.NMDS(mds,data.nosing.rar$SoilFrac, rainbow(5))
