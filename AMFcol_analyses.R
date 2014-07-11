@@ -1,11 +1,10 @@
 #Elizabeth Bach
 #COBS 2012 Fungi:  AMF root colonization data subset
-#data collected by G. Narvareaz and K. Murray
+#data collected by G. Narveaz and K. Murray
 #Analysis for Fungal manuscript
 #July 8, 2014
 
 rm(list=ls())
-#library(ggplot2)
 library(lme4)
 library(lmerTest)
 library(bbmle)
