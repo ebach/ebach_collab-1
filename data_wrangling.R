@@ -10,7 +10,7 @@ library(ggplot2)
 
 
 # setwd("/Users/ryanjwtx/Desktop/bach_collab/")
-# dataset<-read.csv("EBach_COBS_ITS_data.csv")
+dataset<-read.csv("EBach_COBS_ITS_data.csv")
 
 
 # Read in the data

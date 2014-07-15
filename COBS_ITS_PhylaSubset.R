@@ -50,6 +50,7 @@ return(quantile(boot.mean,(0.025)))
 
 #Basidiomycota
 #order
+#SoilFrac
 Basidio.order<-ddply(Basidio.data, .(SoilFrac, Order), summarise,.progress="text",
 mean=mean(value),
 high95=boot.high(value),
@@ -58,6 +59,28 @@ low95=boot.low(value)
 head(Basidio.order)
 
 ggplot(Basidio.order)+geom_pointrange(aes(x=Order,y=mean,ymax=high95,ymin=low95, color=SoilFrac),position=position_dodge(width=1))+coord_flip()+scale_y_log10()
+
+#Crop
+Basidio.order<-ddply(Basidio.data, .(Crop, Order), summarise,.progress="text",
+mean=mean(value),
+high95=boot.high(value),
+low95=boot.low(value)
+)
+head(Basidio.order)
+
+ggplot(Basidio.order)+geom_pointrange(aes(x=Order,y=mean,ymax=high95,ymin=low95, color=Crop),position=position_dodge(width=1))+coord_flip()+scale_y_log10()
+
+#Date
+#Crop
+Basidio.order<-ddply(Basidio.data, .(Date, Order), summarise,.progress="text",
+mean=mean(value),
+high95=boot.high(value),
+low95=boot.low(value)
+)
+head(Basidio.order)
+
+ggplot(Basidio.order)+geom_pointrange(aes(x=Order,y=mean,ymax=high95,ymin=low95, color=Date),position=position_dodge(width=1))+coord_flip()+scale_y_log10()
+
 
 #Family
 Basidio.family<-ddply(Basidio.data, .(SoilFrac, Family), summarise,.progress="text",

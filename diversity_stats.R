@@ -41,7 +41,7 @@ TukeyHSD(test)
 ggplot(div_stats)+geom_boxplot(aes(x=SoilFrac, y=richness))
 
 head(data.nosing.rar[,1:10])
-data_melt<-melt(data.nosing.rar, id=c("SampleName","Date","CropBlock","Crop","SoilFrac"))
+data_melt<-melt(data.nosing.rar, id=c("SampleName","Date","Block","Crop","SoilFrac"))
 
 taxonomy<-read.csv(file.choose())
 head(taxonomy)
@@ -81,3 +81,24 @@ ggplot(Phyla.data)+geom_pointrange(aes(x=Phylum,y=mean,ymax=high95,ymin=low95, c
 stats$SoilFrac<-factor(stats$SoilFrac, levels=c("Micro","SM","MM","LM","WS"))
 ggplot(stats)+geom_pointrange(aes(x=Phylum,y=mean,ymax=high95,ymin=low95,colour=SoilFrac),position=position_dodge(width=.5))+coord_flip()+scale_y_log10()
 
+#SampleID to look for crop
+Phyla.datac<-ddply(data_taxa2, .(Crop, Phylum), summarise,.progress="text",
+mean=mean(value),
+high95=boot.high(value),
+low95=boot.low(value)
+)
+head(Phyla.datac)
+
+ggplot(Phyla.datac)+geom_pointrange(aes(x=Phylum,y=mean,ymax=high95,ymin=low95, color=Crop),position=position_dodge(width=1))+coord_flip()+scale_y_log10()
+#Some interesting differences to pursue here
+
+#SampleID to look for date
+Phyla.datad<-ddply(data_taxa2, .(Date, Phylum), summarise,.progress="text",
+mean=mean(value),
+high95=boot.high(value),
+low95=boot.low(value)
+)
+head(Phyla.datad)
+
+ggplot(Phyla.datad)+geom_pointrange(aes(x=Phylum,y=mean,ymax=high95,ymin=low95, color=Date),position=position_dodge(width=1))+coord_flip()+scale_y_log10()
+#Asco and Zygo are higher in Oct, may not be significant.  All others essentiall the same.
