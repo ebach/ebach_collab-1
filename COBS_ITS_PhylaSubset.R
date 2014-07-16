@@ -113,6 +113,28 @@ head(Asco.order)
 
 ggplot(Asco.order)+geom_pointrange(aes(x=Order,y=mean,ymax=high95,ymin=low95, color=SoilFrac),position=position_dodge(width=1))+coord_flip()+scale_y_log10()
 
+#Crop
+Asco.order<-ddply(Asco.data, .(Crop, Order), summarise,.progress="text",
+mean=mean(value),
+high95=boot.high(value),
+low95=boot.low(value)
+)
+head(Asco.order)
+
+ggplot(Asco.order)+geom_pointrange(aes(x=Order,y=mean,ymax=high95,ymin=low95, color=Crop),position=position_dodge(width=1))+coord_flip()+scale_y_log10()
+
+#Date
+Asco.order<-ddply(Asco.data, .(Date, Order), summarise,.progress="text",
+mean=mean(value),
+high95=boot.high(value),
+low95=boot.low(value)
+)
+head(Asco.order)
+
+ggplot(Asco.order)+geom_pointrange(aes(x=Order,y=mean,ymax=high95,ymin=low95, color=Date),position=position_dodge(width=1))+coord_flip()+scale_y_log10()
+
+
+
 #Family
 Asco.family<-ddply(Asco.data, .(SoilFrac, Family), summarise,.progress="text",
 mean=mean(value),
