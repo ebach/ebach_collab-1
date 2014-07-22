@@ -21,15 +21,19 @@ metadata$TN<-as.numeric(levels(metadata$TN))[metadata$TN]
 metadata$CN<-as.numeric(levels(metadata$CN))[metadata$CN]
 str(metadata)
 
-metadata.mds<-merge(mds.points12, metadata, by="SampleName")
-head(metadata.mds)
-str(metadata.mds)
-
 #Use envfit from vegan package to fit environmental vectors in ordination
 #generate single data frame with original community data + "metadata"
 data.metadata<-merge(metadata, data.nosing.rar, by="SampleName")
 head(data.metadata[,1:30])
 str(data.metadata[,6:26])
+
+#subset to remove environmental variables only measured at WS level
+metadata.agg<-cbind(data.metadata[1:6],data.metadata[8],data.metadata[16:20],data.metadata[23:25])
+head(metadata.agg)
+str(metadata.agg)
+
+data.metadata2<-merge(metadata.agg, data.nosing.rar, by="SampleName")
+head(data.metadata2[,1:20])
 
 #Now run mds function on the community data only
 ggplot.NMDS<-function(XX,ZZ,COLORS){
@@ -62,34 +66,73 @@ X1
 }
 
 #Presence/Absence
+mds.pa<-metaMDS(decostand(data.metadata2[,-c(1:19)],"pa" ),k=6,autotransform=FALSE, na.rm=TRUE)
+
+envectors1<-envfit(mds.pa, data.metadata2[,7:15], na.rm=TRUE)
+head(envectors1)
+envectors1
+vectors<-data.frame(envectors1$vectors[1:4])
+names<-c("water_content","AP","BG","BX","CB","NAG","TC","TN","CN")
+vectors2<-subset(data.frame(names,vectors), pvals<0.06) #BG P=0.057, so I decided to include it
+vectors2
+
+ggplot.NMDS(mds.pa, (data.metadata2$Crop.x), rainbow(3))+geom_segment(data=vectors2, aes(x=0,xend=arrows.NMDS1,y=0,yend=arrows.NMDS2),arrow=arrow(length = unit(0.5, "cm")),colour="grey",inherit_aes=FALSE)+
+geom_text(data=vectors2,aes(x=arrows.NMDS1,y=arrows.NMDS2,label=names),size=5)
+
+ggplot.NMDS(mds.pa, (data.metadata2$Date.x), rainbow(2))
+
+ggplot.NMDS(mds.pa, (data.metadata2$SoilFrac.x), rainbow(5))+geom_segment(data=vectors2, aes(x=0,xend=arrows.NMDS1,y=0,yend=arrows.NMDS2),arrow=arrow(length = unit(0.5, "cm")),colour="grey",inherit_aes=FALSE)+
+geom_text(data=vectors2,aes(x=arrows.NMDS1,y=arrows.NMDS2,label=names),size=5)
+
+
+#Total abundance
+mds.ab<-metaMDS(decostand(data.metadata2[,-c(1:19)],"total" ),k=6,autotransform=FALSE, na.rm=TRUE)
+
+envectors2<-envfit(mds.ab, data.metadata2[,7:15], na.rm=TRUE)
+envectors2
+vectors<-data.frame(envectors2$vectors[1:4])
+names<-c("water_content","AP","BG","BX","CB","NAG","TC","TN","CN")
+vectors2<-subset(data.frame(names,vectors), pvals<0.05)
+vectors2
+
+ggplot.NMDS(mds.ab, (data.metadata2$Crop.x), rainbow(3))+geom_segment(data=vectors2, aes(x=0,xend=arrows.NMDS1,y=0,yend=arrows.NMDS2),arrow=arrow(length = unit(0.5, "cm")),colour="grey",inherit_aes=FALSE)+
+geom_text(data=vectors2,aes(x=arrows.NMDS1,y=arrows.NMDS2,label=names),size=5)
+
+ggplot.NMDS(mds.ab, (data.metadata2$SoilFrac.x), rainbow(5))+geom_segment(data=vectors2, aes(x=0,xend=arrows.NMDS1,y=0,yend=arrows.NMDS2),arrow=arrow(length = unit(0.5, "cm")),colour="grey",inherit_aes=FALSE)+
+geom_text(data=vectors2,aes(x=arrows.NMDS1,y=arrows.NMDS2,label=names),size=5)
+
+ggplot.NMDS(mds.ab, (data.metadata2$Date.x), rainbow(2))
+
+#To Do:
+#Look at mixed models to see which env. variables are changing with crop, date, soil frac
+#all have crop effect
+#emphasize ones without treatment responses, as these may be good drivers of communities (e.g. driving communities beyond treatment effects)
+#Perhaps cropping system differences will be better with WS, and use SoilFrac effects on aggregate-specific measures
+#Bullet point results
+
+#Aggregate Fraction (includes whole soil measures)
+#Presence/Absence
 mds.pa<-metaMDS(decostand(data.metadata[,-c(1:29)],"pa" ),k=6,autotransform=FALSE)
 
 envectors1<-envfit(mds.pa, data.metadata[,7:25], na.rm=TRUE)
-head(envectors1)
 envectors1
-vectors<-scores(envectors1, "vectors")
+vectors<-data.frame(envectors1$vectors[1:4])
 names<-c("ph","water_content","MBN","ExtC","ExtN","BD","TP","AMFcol","MBC","AP","BG","BX","CB","NAG","RootBiomass","MBC.MBN","TC","TN","CN")
-vectors2<-data.frame(names,vectors)
-str(vectors2)
+vectors2<-subset(data.frame(names,vectors), pvals<0.05)
 vectors2
-ggplot.NMDS(mds.pa, (data.metadata$Crop.x), rainbow(3))+geom_segment(data=vectors2, aes(x=0,xend=NMDS1,y=0,yend=NMDS2),arrow=arrow(length = unit(0.5, "cm")),colour="grey",inherit_aes=FALSE)+
-geom_text(data=vectors2,aes(x=NMDS1,y=NMDS2,label=names),size=5)
-ggplot.NMDS(mds.pa, (data.metadata$Date.x), rainbow(2))
 
-#Total abundance
-mds.ab<-metaMDS(decostand(data.metadata[,-c(1:29)],"total" ),k=6,autotransform=FALSE)
-ggplot.NMDS(mds.ab, (data.metadata$Crop.x), rainbow(3))
+
+ggplot.NMDS(mds.pa, (data.metadata$SoilFrac.x), rainbow(5))+geom_segment(data=vectors2, aes(x=0,xend=arrows.NMDS1,y=0,yend=arrows.NMDS2),arrow=arrow(length = unit(0.5, "cm")),colour="grey",inherit_aes=FALSE)+
+geom_text(data=vectors2,aes(x=arrows.NMDS1,y=arrows.NMDS2,label=names),size=5)
+
+#Abundance
+mds.ab<-metaMDS(decostand(data.metadata[,-c(1:29)],"total" ),k=6,autotransform=FALSE, na.rm=TRUE)
 
 envectors2<-envfit(mds.ab, data.metadata[,7:25], na.rm=TRUE)
-head(envectors2)
 envectors2
-vectors<-scores(envectors2, "vectors")
+vectors.ab<-data.frame(envectors2$vectors[1:4])
+vectors.ab2<-subset(data.frame(names,vectors.ab), pvals<0.05)
+vectors.ab2
 
-
-#To Do:
-#pull out NS variables
-#Look at mixed models to see which env. variables are changing with crop, date, soil frac
-#emphasize ones without treatment responses, as these may be good drivers of communities (e.g. driving communities beyond treatment effects)
-#do a WS subset, look at MBC, pH, AMF, etc. with WS only, as I do not have aggregate-specific measures of those
-#Perhaps cropping system differences will be better with WS, and use SoilFrac effects on aggregate-specific measures
-#Bullet point results
+ggplot.NMDS(mds.ab, (data.metadata$SoilFrac.x), rainbow(5))+geom_segment(data=vectors.ab2, aes(x=0,xend=arrows.NMDS1,y=0,yend=arrows.NMDS2),arrow=arrow(length = unit(0.5, "cm")),colour="grey",inherit_aes=FALSE)+
+geom_text(data=vectors.ab2,aes(x=arrows.NMDS1,y=arrows.NMDS2,label=names),size=5)
