@@ -126,3 +126,54 @@ anova(CN.model.main)
 difflsmeans(CN.model.main, ddf="Satterthwaite",type=3,method.grad="simple")
 ddply(CN.data2, .(Crop), summarise, mean=mean(CN)) 
 #Strong crop effect, PF>P=CC
+
+#Enzymes: BX & NAG
+BX.data<-cbind(metadata[,1:6],metadata[18])
+BX.data2<-subset(BX.data, BX.data$BX>0)
+#removing 1 outlier
+BX.data3<-subset(BX.data2, BX.data2$BX<400)
+BX.data3$BX
+hist(BX.data3$BX)
+head(BX.data3)
+#Skewed somewhat left, log transform is good idea with all the enzymes
+BX.null<-lmer(log(BX+1)~1+(1|Block),data=BX.data3,REML=FALSE)
+BX.model.full<-lmer(log(BX+1)~Date*Crop*SoilFrac+(1|Block), data=BX.data3, REML=FALSE)
+BX.model.main<-lmer(log(BX+1)~Date+Crop+SoilFrac+(1|Block), data=BX.data3, REML=FALSE)
+AICtab(BX.null,BX.model.full,BX.model.main)
+anova(BX.null,BX.model.full,BX.model.main)
+#main model lowest AIC, by 0.9
+anova(BX.model.full)
+#Date*Crop interaction, building model to include that interaction only
+BX.model<-lmer(log(BX+1)~Date+Crop+SoilFrac+Date*Crop+(1|Block), data=BX.data3, REML=FALSE)
+AICtab(BX.null,BX.model.full,BX.model.main,BX.model)
+anova(BX.null,BX.model.full,BX.model.main,BX.model)
+#BX.model lowest AIC by 23
+anova(BX.model)
+#Crop*Date interaction, P<0.0001, but no significant effect of soil aggregate
+
+NAG.data<-cbind(metadata[,1:6],metadata[20])
+NAG.data2<-subset(NAG.data, NAG.data$NAG>0)
+hist(NAG.data2$NAG)
+#removing 1 outlier
+NAG.data3<-subset(NAG.data2, NAG.data2$NAG<400)
+NAG.data3$NAG
+hist(NAG.data3$NAG)
+head(NAG.data3)
+#Skewed somewhat left, log transform is good idea with all the enzymes
+NAG.null<-lmer(log(NAG+1)~1+(1|Block),data=NAG.data3,REML=FALSE)
+NAG.model.full<-lmer(log(NAG+1)~Date*Crop*SoilFrac+(1|Block), data=NAG.data3, REML=FALSE)
+NAG.model.main<-lmer(log(NAG+1)~Date+Crop+SoilFrac+(1|Block), data=NAG.data3, REML=FALSE)
+AICtab(NAG.null,NAG.model.full,NAG.model.main)
+anova(NAG.null,NAG.model.full,NAG.model.main)
+#full model best fit by 30
+anova(NAG.model.full)
+#Date*Crop*Soil 3-way interaction P=0.05, Date*Crop interaction very significant
+#Model 1 with both Date*Crop and 3-way
+NAG.model1<-lmer(log(NAG+1)~Date+Crop+SoilFrac+Date*Crop+Date*Crop*SoilFrac+(1|Block), data=NAG.data3, REML=FALSE)
+#Model 2 with only Date*Crop
+NAG.model2<-lmer(log(NAG+1)~Date+Crop+SoilFrac+Date*Crop+(1|Block), data=NAG.data3, REML=FALSE)
+AICtab(NAG.null,NAG.model.full,NAG.model.main,NAG.model1,NAG.model2)
+anova(NAG.null,NAG.model.full,NAG.model.main,NAG.model1,NAG.model2)
+#NAG.model2 has lowest AIC, by 16, better fit
+anova(NAG.model2) 
+#Date*Crop interaction significant, P<0.0001; SoilFrac main effect also significant P=0.002

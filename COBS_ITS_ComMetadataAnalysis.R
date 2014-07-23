@@ -83,7 +83,7 @@ ggplot.NMDS(mds.pa, (data.metadata2$Date.x), rainbow(2))
 
 ggplot.NMDS(mds.pa, (data.metadata2$SoilFrac.x), rainbow(5))+geom_segment(data=vectors2, aes(x=0,xend=arrows.NMDS1,y=0,yend=arrows.NMDS2),arrow=arrow(length = unit(0.5, "cm")),colour="grey",inherit_aes=FALSE)+
 geom_text(data=vectors2,aes(x=arrows.NMDS1,y=arrows.NMDS2,label=names),size=5)
-
+#SoilFrac does support different communities through p/a data
 
 #Total abundance
 mds.ab<-metaMDS(decostand(data.metadata2[,-c(1:19)],"total" ),k=6,autotransform=FALSE, na.rm=TRUE)
@@ -91,16 +91,17 @@ mds.ab<-metaMDS(decostand(data.metadata2[,-c(1:19)],"total" ),k=6,autotransform=
 envectors2<-envfit(mds.ab, data.metadata2[,7:15], na.rm=TRUE)
 envectors2
 vectors<-data.frame(envectors2$vectors[1:4])
+vectors
 names<-c("water_content","AP","BG","BX","CB","NAG","TC","TN","CN")
-vectors2<-subset(data.frame(names,vectors), pvals<0.05)
-vectors2
+vectors.ab2<-subset(data.frame(names,vectors), pvals<0.05)
+vectors.ab2
 
-ggplot.NMDS(mds.ab, (data.metadata2$Crop.x), rainbow(3))+geom_segment(data=vectors2, aes(x=0,xend=arrows.NMDS1,y=0,yend=arrows.NMDS2),arrow=arrow(length = unit(0.5, "cm")),colour="grey",inherit_aes=FALSE)+
-geom_text(data=vectors2,aes(x=arrows.NMDS1,y=arrows.NMDS2,label=names),size=5)
+ggplot.NMDS(mds.ab, (data.metadata2$Crop.x), rainbow(3))+geom_segment(data=vectors.ab2, aes(x=0,xend=arrows.NMDS1,y=0,yend=arrows.NMDS2),arrow=arrow(length = unit(0.5, "cm")),colour="grey",inherit_aes=FALSE)+
+geom_text(data=vectors.ab2,aes(x=arrows.NMDS1,y=arrows.NMDS2,label=names),size=5)
 
-ggplot.NMDS(mds.ab, (data.metadata2$SoilFrac.x), rainbow(5))+geom_segment(data=vectors2, aes(x=0,xend=arrows.NMDS1,y=0,yend=arrows.NMDS2),arrow=arrow(length = unit(0.5, "cm")),colour="grey",inherit_aes=FALSE)+
-geom_text(data=vectors2,aes(x=arrows.NMDS1,y=arrows.NMDS2,label=names),size=5)
-
+ggplot.NMDS(mds.ab, (data.metadata2$SoilFrac.x), rainbow(5))+geom_segment(data=vectors.ab2, aes(x=0,xend=arrows.NMDS1,y=0,yend=arrows.NMDS2),arrow=arrow(length = unit(0.5, "cm")),colour="grey",inherit_aes=FALSE)+
+geom_text(data=vectors.ab2,aes(x=arrows.NMDS1,y=arrows.NMDS2,label=names),size=5)
+#note, SoilFrac does not support different communities by abundance measure
 ggplot.NMDS(mds.ab, (data.metadata2$Date.x), rainbow(2))
 
 #To Do:
