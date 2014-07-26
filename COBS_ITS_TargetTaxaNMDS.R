@@ -20,6 +20,7 @@ data_taxa<-merge(data_melt,taxonomy,by.x="variable",by.y="X.OTU.ID")
 head(data_taxa)
 data_taxa2<-data_taxa[ which(data_taxa$value>0),]
 head(data_taxa2)
+#??For Presence/Absence should be taking out all the 0's??  Doesn't seem to change story, but keep thinking about this.
 data_phyla<-data.frame(cast(data_taxa2, SampleName~Phylum, value="value", fun.aggregate=sum, add.missing=TRUE))
 head(data_phyla)
 head(data.nosing.rar[,1:10])
@@ -30,7 +31,7 @@ names(merged_taxa[,1:30])
 
 Basidio.data<-subset(data_taxa2, data_taxa2$Phylum=="p__Basidiomycota")
 
-
+#NMDS plotting function, from R. Williams
 ggplot.NMDS<-function(XX,ZZ,COLORS){
 	library(ggplot2)
 MDS1<-data.frame(scores(XX))$NMDS1
