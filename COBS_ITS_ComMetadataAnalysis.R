@@ -9,7 +9,7 @@ library(lmerTest)
 library(bbmle)
 library(grid)
 
-#use "mds" generated in multivariate_tests.R, and data.nosing rar
+#use data.nosing rar generated in "data_wrangling.R"
 
 metadata<-read.csv("COBS_ITS_metadata.csv")
 str(metadata)

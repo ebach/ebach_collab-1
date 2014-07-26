@@ -146,12 +146,13 @@ head(Asco.family)
 ggplot(Asco.family)+geom_pointrange(aes(x=Family,y=mean,ymax=high95,ymin=low95, color=SoilFrac),position=position_dodge(width=1))+coord_flip()+scale_y_log10()
 
 #Species
-Asco.species<-ddply(Asco.data, .(SoilFrac, Species), summarise,.progress="text",
+Asco.species<-ddply(Asco.data, .(SoilFrac, Genus), summarise,.progress="text",
 mean=mean(value),
 high95=boot.high(value),
 low95=boot.low(value)
 )
 head(Asco.species)
+list(unique(Asco.species$Genus))
 
 ggplot(Asco.species)+geom_pointrange(aes(x=Species,y=mean,ymax=high95,ymin=low95, color=SoilFrac),position=position_dodge(width=1))+coord_flip()+scale_y_log10()
 
