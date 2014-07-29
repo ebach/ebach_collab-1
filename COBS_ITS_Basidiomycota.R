@@ -45,7 +45,7 @@ AICtab(Basidio.null,Basidio.model.full,Basidio.model.main)
 #Null model best fit, main is next by 6.2
 anova(Basidio.model.main)
 anova(Basidio.model.full)
-#No factors or interactions significatn
+#No factors or interactions significant
 
 #Order Agaricales
 Basidio.agari<-subset(Basidio.data, Basidio.data$Order=="o__Agaricales")
