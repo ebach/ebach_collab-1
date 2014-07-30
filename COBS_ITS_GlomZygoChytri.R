@@ -192,3 +192,8 @@ Chytri.chyt<-subset(Chytri.data, Chytri.data$Order=="o__Chytridiales")
 head(Chytri.chyt)
 str(Chytri.chyt)
 #Only 3 observations, low abundance
+
+#Order Spzillomyctales, contains obligate anaerobes
+Chytri.Spiz<-subset(Chytri.data, Chytri.data$Order=="o__Spizellomycetales")
+head(Chytri.Spiz)
+#2 reads found in P24.WS.July2012, only sample

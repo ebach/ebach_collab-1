@@ -128,4 +128,131 @@ geom_text(data=IntVectors2,aes(x=arrows.NMDS1,y=arrows.NMDS2,label=names),size=4
 ggplot.NMDS(mds.pa, (taxa.interest$Crop), rainbow(3))+geom_point(data=IntVectors2, aes(x=arrows.NMDS1,y=arrows.NMDS2),colour="grey",inherit_aes=FALSE)+
 geom_text(data=IntVectors2,aes(x=arrows.NMDS1,y=arrows.NMDS2,label=names),size=4)
 
+#Adding environmental vectors to NMDS
+#use data.metadata2 from COBS_ITS_ComMetadataAnalysis.R
+#Presence/Absence 
+envectors1<-envfit(mds.pa, data.metadata2[,7:15], na.rm=TRUE)
+head(envectors1)
+envectors1
+vectors<-data.frame(envectors1$vectors[1:4])
+names<-c("water_content","AP","BG","BX","CB","NAG","TC","TN","CN")
+vectors2<-subset(data.frame(names,vectors), pvals<0.05)
+vectors2
+
+ggplot.NMDS(mds.pa, (taxa.interest$Crop), rainbow(3))+geom_point(data=IntVectors2, aes(x=arrows.NMDS1,y=arrows.NMDS2),colour="grey",inherit_aes=FALSE)+
+geom_text(data=IntVectors2,aes(x=arrows.NMDS1,y=arrows.NMDS2,label=names),size=4)+geom_segment(data=vectors2, aes(x=0,xend=arrows.NMDS1,y=0,yend=arrows.NMDS2),arrow=arrow(length = unit(0.5, "cm")),colour="grey",inherit_aes=FALSE)+
+geom_text(data=vectors2,aes(x=arrows.NMDS1,y=arrows.NMDS2,label=names),size=5)
+
+#BX, TC, TN, water content correlated in same direction as
+#Thanatephorus, Psathyrellaceae
+
+ggplot.NMDS(mds.pa, (taxa.interest$SoilFrac), rainbow(5))+geom_point(data=IntVectors2, aes(x=arrows.NMDS1,y=arrows.NMDS2),colour="grey",inherit_aes=FALSE)+
+geom_text(data=IntVectors2,aes(x=arrows.NMDS1,y=arrows.NMDS2,label=names),size=4)+geom_segment(data=vectors2, aes(x=0,xend=arrows.NMDS1,y=0,yend=arrows.NMDS2),arrow=arrow(length = unit(0.5, "cm")),colour="grey",inherit_aes=FALSE)+
+geom_text(data=vectors2,aes(x=arrows.NMDS1,y=arrows.NMDS2,label=names),size=5)
+
+#Correlations between BX, Thanatephorus and Psathyrellaceae
+taxa_enzy<-merge(taxa.interest, data.metadata2[1:15], by="SampleName")
+head(taxa_enzy)
+BX.model<-lmer(log(BX+1)~g__Thanatephorus+(1|Block),data=taxa_enzy,REML=FALSE)
+anova(BX.model)
+BX.model2<-lmer(log(BX+1)~g__Thanatephorus+Crop+Date+(1|Block),data=taxa_enzy,REML=FALSE)
+anova(BX.model2)
+#Thanatephorus has high P value (>0.8) in any model
+
+BX.model<-lmer(log(BX+1)~f__Psathyrellaceae+(1|Block),data=taxa_enzy,REML=FALSE)
+anova(BX.model)
+BX.model2<-lmer(log(BX+1)~f__Psathyrellaceae+Crop+Date+(1|Block),data=taxa_enzy,REML=FALSE)
+anova(BX.model2)
+#Psathyrellaceae is NS (P~0.24) in any model
+
+BX.model<-lmer(log(BX+1)~TC+(1|Block),data=taxa_enzy,REML=FALSE)
+anova(BX.model)
+BX.model2<-lmer(log(BX+1)~TC+Crop+Date+(1|Block),data=taxa_enzy,REML=FALSE)
+anova(BX.model2)
+#Highly significantly correlated with TC, any model
+
+BX.model<-lmer(log(BX+1)~water_content_soil+(1|Block),data=taxa_enzy,REML=FALSE)
+anova(BX.model)
+BX.model2<-lmer(log(BX+1)~water_content_soil+Crop+Date+(1|Block),data=taxa_enzy,REML=FALSE)
+anova(BX.model2)
+#Highly correlated with water content in any model as well
+
+#Subset to get rid of 0s in Thant and Psath
+Than.data<-subset(taxa_enzy, taxa_enzy$g__Thanatephorus>0)
+head(Than.data)
+Psath.data<-subset(taxa_enzy, taxa_enzy$f__Psathyrellaceae>0)
+head(Psath.data)
+
+BX.model<-lmer(log(BX+1)~g__Thanatephorus+(1|Block),data=Than.data,REML=FALSE)
+anova(BX.model)
+BX.model2<-lmer(log(BX+1)~g__Thanatephorus+Crop+Date+(1|Block),data=Than.data,REML=FALSE)
+anova(BX.model2)
+BX.model3<-lmer(log(BX+1)~g__Thanatephorus*Crop*Date+(1|Block),data=Than.data,REML=FALSE)
+anova(BX.model3)
+BX.model4<-lmer(log(BX+1)~g__Thanatephorus+Crop+Date+Crop*Date+(1|Block),data=Than.data,REML=FALSE)
+anova(BX.model4)
+AICtab(BX.model,BX.model2,BX.model3,BX.model4)
+#model 3 is lowest AIC, although not enough Than presence to do full factorial comparisons
+#Than. marginally significant, P=0.07
+
+BX.model<-lmer(log(BX+1)~f__Psathyrellaceae+(1|Block),data=Psath.data,REML=FALSE)
+anova(BX.model)
+BX.model2<-lmer(log(BX+1)~f__Psathyrellaceae+Crop+Date+(1|Block),data=Psath.data,REML=FALSE)
+anova(BX.model2)
+BX.model3<-lmer(log(BX+1)~f__Psathyrellaceae*Crop*Date+(1|Block),data=Psath.data,REML=FALSE)
+anova(BX.model3)
+BX.model4<-lmer(log(BX+1)~f__Psathyrellaceae+Crop+Date+Crop*Date+(1|Block),data=Psath.data,REML=FALSE)
+anova(BX.model4)
+AICtab(BX.model,BX.model2,BX.model3,BX.model4)
+#BX model is lowest AIC, no factor of Psath significant, except Crop*Date interaction in model3, may be limited by unbalanced contrasts
+
+#Abundance
+mds.ab<-metaMDS(decostand(data.metadata2[,-c(1:19)],"total" ),k=6,autotransform=FALSE, na.rm=TRUE)
+
+envectors2<-envfit(mds.ab, data.metadata2[,7:15], na.rm=TRUE)
+envectors2
+vectors<-data.frame(envectors2$vectors[1:4])
+vectors
+names<-c("water_content","AP","BG","BX","CB","NAG","TC","TN","CN")
+vectors.ab2<-subset(data.frame(names,vectors), pvals<0.05)
+vectors.ab2
+
+IntVectors1ab<-envfit(mds.ab, taxa.interest[,6:15], na.rm=TRUE)
+IntVectors1ab
+vectors<-data.frame(IntVectors1ab$vectors[1:4])
+vectors
+names<-c("Limonomyces","Atheliales","UnkBasidio","Thanatephorus","Psathyrellaceae","Strophariaceae","Peziza","Bionectriaceae","Glomerales","Operculomyces")
+IntVectors2ab<-data.frame(names, vectors)
+
+ggplot.NMDS(mds.ab, (data.metadata2$Crop.x), rainbow(3))+geom_segment(data=vectors.ab2, aes(x=0,xend=arrows.NMDS1,y=0,yend=arrows.NMDS2),arrow=arrow(length = unit(0.5, "cm")),colour="grey",inherit_aes=FALSE)+
+geom_text(data=vectors.ab2,aes(x=arrows.NMDS1,y=arrows.NMDS2,label=names),size=5)+geom_point(data=IntVectors2ab, aes(x=arrows.NMDS1,y=arrows.NMDS2),colour="grey",inherit_aes=FALSE)+
+geom_text(data=IntVectors2ab,aes(x=arrows.NMDS1,y=arrows.NMDS2,label=names),size=4)
+
+#NAG correlated in same direction as Limonomyces, both correlated in Prairie direction
+#TC, TN, CN, water_content correlated in same direction as Strophariaceae and Bionectriaceae (Bion. a NS correlation) in PF direction
+#Correlation models
+
+NAG.model<-lmer(log(NAG+1)~g__Limonomyces+(1|Block),data=taxa_enzy,REML=FALSE)
+anova(NAG.model)
+NAG.model2<-lmer(log(NAG+1)~g__Limonomyces+Crop+Date+(1|Block),data=taxa_enzy,REML=FALSE)
+anova(NAG.model2)
+NAG.model3<-lmer(log(NAG+1)~g__Limonomyces*Crop*Date+(1|Block),data=taxa_enzy,REML=FALSE)
+anova(NAG.model3)
+NAG.model4<-lmer(log(NAG+1)~g__Limonomyces+Crop+Date+Crop*Date+(1|Block),data=taxa_enzy,REML=FALSE)
+anova(NAG.model4)
+AICtab(NAG.model,NAG.model2,NAG.model3,NAG.model4)
+#model 4 best fit, only slightly better than model 3, in both models Limonomyces NS
+
+#Subset to remove 0s in Limonomyces
+Limono.data<-subset(taxa_enzy, taxa_enzy$g__Limonomyces>0)
+head(Limono.data)
+
+NAG.model<-lmer(log(NAG+1)~g__Limonomyces+(1|Block),data=Limono.data,REML=FALSE)
+anova(NAG.model)
+NAG.model2<-lmer(log(NAG+1)~g__Limonomyces+Date+(1|Block),data=Limono.data,REML=FALSE)
+anova(NAG.model2)
+NAG.model3<-lmer(log(NAG+1)~g__Limonomyces*Date+(1|Block),data=Limono.data,REML=FALSE)
+anova(NAG.model3)
+AICtab(NAG.model,NAG.model2,NAG.model3)
+#Model 3 lowest AIC, Limonomyces P=0.10, can't compare Crop because only appears in P
 
