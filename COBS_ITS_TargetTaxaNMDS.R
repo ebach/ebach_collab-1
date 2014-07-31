@@ -5,6 +5,10 @@
 library(reshape)
 library(grid)
 library(ggplot2)
+library(lme4)
+library(lmerTest)
+library(bbmle)
+
 
 #use data.nosing rar generated in "data_wrangling.R"
 #taxonomy code from diversity_stats.R
@@ -62,6 +66,14 @@ X1
 }
 
 mds.pa<-metaMDS(decostand(merged_taxa[,-c(1:11)],"pa" ),k=6,autotransform=FALSE, na.rm=TRUE)
+
+#Subset for LM, micro (SoilFrac differences)
+merged_LMmicro<-subset(merged_taxa,merged_taxa$SoilFrac=="LM"|SoilFrac=="Micro")
+dim(merged_LMmicro)
+head(merged_LMmicro[1:12])
+mds.SoilFrac<-metaMDS(decostand(merged_LMmicro[,-c(1:11)],"pa"),k=6,autotransform=FALSE, na.rm=TRUE)
+str(mds.SoilFrac)
+mds.SoilFrac$points
 
 #Figure summarizing target taxa in presence/absence NMDS
 Limonomyces<-subset(data_taxa2, data_taxa2$Genus=="g__Limonomyces")
@@ -121,6 +133,7 @@ vectors<-data.frame(IntVectors1$vectors[1:4])
 vectors
 names<-c("Limonomyces","Atheliales","UnkBasidio","Thanatephorus","Psathyrellaceae","Strophariaceae","Peziza","Bionectriaceae","Glomerales","Operculomyces")
 IntVectors2<-data.frame(names, vectors)
+IntVectors3<-(subset(IntVectors2, pvals<0.05))
 
 ggplot.NMDS(mds.pa, (taxa.interest$SoilFrac), rainbow(5))+geom_point(data=IntVectors2, aes(x=arrows.NMDS1,y=arrows.NMDS2),colour="grey",inherit_aes=FALSE)+
 geom_text(data=IntVectors2,aes(x=arrows.NMDS1,y=arrows.NMDS2,label=names),size=4)
@@ -139,16 +152,90 @@ names<-c("water_content","AP","BG","BX","CB","NAG","TC","TN","CN")
 vectors2<-subset(data.frame(names,vectors), pvals<0.05)
 vectors2
 
-ggplot.NMDS(mds.pa, (taxa.interest$Crop), rainbow(3))+geom_point(data=IntVectors2, aes(x=arrows.NMDS1,y=arrows.NMDS2),colour="grey",inherit_aes=FALSE)+
-geom_text(data=IntVectors2,aes(x=arrows.NMDS1,y=arrows.NMDS2,label=names),size=4)+geom_segment(data=vectors2, aes(x=0,xend=arrows.NMDS1,y=0,yend=arrows.NMDS2),arrow=arrow(length = unit(0.5, "cm")),colour="grey",inherit_aes=FALSE)+
-geom_text(data=vectors2,aes(x=arrows.NMDS1,y=arrows.NMDS2,label=names),size=5)
+ggplot.NMDS(mds.pa, (taxa.interest$Crop), rainbow(3))+geom_point(data=IntVectors3, aes(x=arrows.NMDS1,y=arrows.NMDS2),colour="grey",inherit_aes=FALSE)+
+geom_text(data=IntVectors3,aes(x=arrows.NMDS1,y=arrows.NMDS2,label=names),position=position_jitter(height=0.15),size=4)+geom_segment(data=vectors2, aes(x=0,xend=arrows.NMDS1,y=0,yend=arrows.NMDS2),arrow=arrow(length = unit(0.5, "cm")),colour="grey",inherit_aes=FALSE)+
+geom_text(data=vectors2,aes(x=arrows.NMDS1,y=arrows.NMDS2,label=names),position=position_jitter(width=0.15),size=4)
 
 #BX, TC, TN, water content correlated in same direction as
 #Thanatephorus, Psathyrellaceae
 
-ggplot.NMDS(mds.pa, (taxa.interest$SoilFrac), rainbow(5))+geom_point(data=IntVectors2, aes(x=arrows.NMDS1,y=arrows.NMDS2),colour="grey",inherit_aes=FALSE)+
-geom_text(data=IntVectors2,aes(x=arrows.NMDS1,y=arrows.NMDS2,label=names),size=4)+geom_segment(data=vectors2, aes(x=0,xend=arrows.NMDS1,y=0,yend=arrows.NMDS2),arrow=arrow(length = unit(0.5, "cm")),colour="grey",inherit_aes=FALSE)+
-geom_text(data=vectors2,aes(x=arrows.NMDS1,y=arrows.NMDS2,label=names),size=5)
+ggplot.NMDS(mds.pa, (taxa.interest$SoilFrac), rainbow(5))+geom_point(data=IntVectors3, aes(x=arrows.NMDS1,y=arrows.NMDS2),colour="darkgrey",inherit_aes=FALSE)+
+geom_text(data=IntVectors3,aes(x=arrows.NMDS1,y=arrows.NMDS2,label=names),position=position_jitter(height=0.15),size=4)+geom_segment(data=vectors2, aes(x=0,xend=arrows.NMDS1,y=0,yend=arrows.NMDS2),arrow=arrow(length = unit(0.5, "cm")),colour="grey",inherit_aes=FALSE)+
+geom_text(data=vectors2,aes(x=arrows.NMDS1,y=arrows.NMDS2,label=names),position=position_jitter(width=0.15),size=4)
+
+#Showing only statistically different SoilFrac groups:  Look into just taking off centroids
+taxa.LMmicro<-subset(taxa.interest, taxa.interest$SoilFrac=="LM"|SoilFrac=="Micro")
+dim(taxa.LMmicro)
+SFVectors1<-envfit(mds.SoilFrac, taxa.LMmicro[,6:15], na.rm=TRUE)
+SFVectors1
+vectors<-data.frame(SFVectors1$vectors[1:4])
+vectors
+names<-c("Limonomyces","Atheliales","UnkBasidio","Thanatephorus","Psathyrellaceae","Strophariaceae","Peziza","Bionectriaceae","Glomerales","Operculomyces")
+SFVectors3<-data.frame(names, vectors)
+#IntVectors3<-(subset(IntVectors2, pvals<0.05)
+
+metadata.SF<-subset(data.metadata, data.metadata$SoilFrac.x=="LM"|SoilFrac.x=="micro")
+dim(metadata.SF)
+envectorsSF<-envfit(mds.SoilFrac, metadata.SF[,7:15], na.rm=TRUE)
+envectorsSF
+vectorsSF<-data.frame(envectorsSF$vectors[1:4])
+names<-c("pH","water_content","AP","BG","BX","CB","NAG","TC","TN","CN")
+vectorsSF2<-data.frame(names,vectors)
+vectorsSF2
+
+#altering NMDS plotting function, from R. Williams to take off centroids, hopefully retain only LM, micro
+ggplot.NMDS2<-function(XX,ZZ,COLORS){
+	library(ggplot2)
+MDS1<-data.frame(scores(XX))$NMDS1
+MDS2<-data.frame(scores(XX))$NMDS2
+Treatment<-ZZ
+
+NMDS<-data.frame(MDS1,MDS2,Treatment)
+
+NMDS.mean=aggregate(NMDS[,1:2],list(group=Treatment),mean)
+
+veganCovEllipse<-function (cov, center = c(0, 0), scale = 1, npoints = 100) 
+  {
+    theta <- (0:npoints) * 2 * pi/npoints
+    Circle <- cbind(cos(theta), sin(theta))
+    t(center + scale * t(Circle %*% chol(cov)))
+  }
+
+  df_ell <- data.frame()
+  for(g in levels(NMDS$Treatment)){
+    df_ell <- rbind(df_ell, cbind(as.data.frame(with(NMDS[NMDS$Treatment=="LM"|Treatment=="Micro",],
+                    veganCovEllipse(cov.wt(cbind(MDS1,MDS2),wt=rep(1/length(MDS1),length(MDS1)))$cov,center=c(mean(MDS1),mean(MDS2)))))
+                    ,group=g))
+  }
+
+X1<-ggplot(data = NMDS, aes(MDS1, MDS2)) + geom_point(aes(color = Treatment),size=3,alpha=0.75) +
+    geom_path(data=df_ell, aes(x=MDS1, y=MDS2,colour=group), size=2, linetype=5)+theme_bw()+theme(aspect.ratio=1)+scale_color_manual(values=COLORS)+theme(axis.text.x=element_text(size=20),axis.text.y=element_text(size=20),axis.title.x=element_text(size=20),axis.title.y=element_text(size=20))+theme(legend.title=element_text(size=15),legend.text=element_text(size=15))
+X1    
+}
+
+#Centroid function
+veganCovEllipse<-function (cov, center = c(0, 0), scale = 1, npoints = 100) 
+  {
+    theta <- (0:npoints) * 2 * pi/npoints
+    Circle <- cbind(cos(theta), sin(theta))
+    t(center + scale * t(Circle %*% chol(cov)))
+  }
+
+  df_ell <- data.frame()
+  for(g in levels(NMDS$SoilFrac)){
+    df_ell <- rbind(df_ell, cbind(as.data.frame(with(NMDS[NMDS$SoilFrac=="LM"|SoilFrac=="Micro",],
+                    veganCovEllipse(cov.wt(cbind(MDS1,MDS2),wt=rep(1/length(MDS1),length(MDS1)))$cov,center=c(mean(MDS1),mean(MDS2)))))
+                    ,group=g))
+  }
+
+ggplot.NMDS2(mds.pa, (taxa.interest$SoilFrac), rainbow(5))
+
++geom_path(data=df_ell, aes(x=MDS1, y=MDS2,colour=group), size=2, linetype=5)
++geom_point(data=SFVectors3, aes(x=arrows.NMDS1,y=arrows.NMDS2),colour="darkgrey",inherit_aes=FALSE)+
+geom_text(data=SFVectors3,aes(x=arrows.NMDS1,y=arrows.NMDS2,label=names),position=position_jitter(height=0.15),size=4)+geom_segment(data=vectorsSF2, aes(x=0,xend=arrows.NMDS1,y=0,yend=arrows.NMDS2),arrow=arrow(length = unit(0.5, "cm")),colour="grey",inherit_aes=FALSE)+
+geom_text(data=vectorsSF2,aes(x=arrows.NMDS1,y=arrows.NMDS2,label=names),position=position_jitter(width=0.15),size=4)
+
+
 
 #Correlations between BX, Thanatephorus and Psathyrellaceae
 taxa_enzy<-merge(taxa.interest, data.metadata2[1:15], by="SampleName")
@@ -164,6 +251,18 @@ anova(BX.model)
 BX.model2<-lmer(log(BX+1)~f__Psathyrellaceae+Crop+Date+(1|Block),data=taxa_enzy,REML=FALSE)
 anova(BX.model2)
 #Psathyrellaceae is NS (P~0.24) in any model
+
+#Stropharaceae
+BX.model<-lmer(log(BX+1)~f__Strophariaceae+(1|Block),data=taxa_enzy,REML=FALSE)
+anova(BX.model)
+BX.model2<-lmer(log(BX+1)~f__Strophariaceae+Crop+Date+(1|Block),data=taxa_enzy,REML=FALSE)
+anova(BX.model2)
+BX.model3<-lmer(log(BX+1)~f__Strophariaceae*Crop*Date+(1|Block),data=taxa_enzy,REML=FALSE)
+anova(BX.model3)
+BX.model4<-lmer(log(BX+1)~f__Strophariaceae+Crop+Date+Crop*Date+(1|Block),data=taxa_enzy,REML=FALSE)
+anova(BX.model4)
+AICtab(BX.model,BX.model2,BX.model3,BX.model4)
+#Full model, model3 lowest AIC, Strophariaceae P=0.18
 
 BX.model<-lmer(log(BX+1)~TC+(1|Block),data=taxa_enzy,REML=FALSE)
 anova(BX.model)
@@ -182,6 +281,8 @@ Than.data<-subset(taxa_enzy, taxa_enzy$g__Thanatephorus>0)
 head(Than.data)
 Psath.data<-subset(taxa_enzy, taxa_enzy$f__Psathyrellaceae>0)
 head(Psath.data)
+Stroph.data<-subset(taxa_enzy, taxa_enzy$f__Strophariaceae>0)
+head(Stroph.data)
 
 BX.model<-lmer(log(BX+1)~g__Thanatephorus+(1|Block),data=Than.data,REML=FALSE)
 anova(BX.model)
@@ -205,6 +306,17 @@ BX.model4<-lmer(log(BX+1)~f__Psathyrellaceae+Crop+Date+Crop*Date+(1|Block),data=
 anova(BX.model4)
 AICtab(BX.model,BX.model2,BX.model3,BX.model4)
 #BX model is lowest AIC, no factor of Psath significant, except Crop*Date interaction in model3, may be limited by unbalanced contrasts
+
+#Stropharaceae
+BX.model<-lmer(log(BX+1)~f__Strophariaceae+(1|Block),data=Stroph.data,REML=FALSE)
+anova(BX.model)
+BX.model2<-lmer(log(BX+1)~f__Strophariaceae+Crop+Date+(1|Block),data=Stroph.data,REML=FALSE)
+anova(BX.model2)
+BX.model3<-lmer(log(BX+1)~f__Strophariaceae*Crop*Date+(1|Block),data=Stroph.data,REML=FALSE)
+anova(BX.model3)
+BX.model4<-lmer(log(BX+1)~f__Strophariaceae+Crop+Date+Crop*Date+(1|Block),data=taxa_enzy,REML=FALSE)
+anova(BX.model4)
+AICtab(BX.model,BX.model2,BX.model3,BX.model4)
 
 #Abundance
 mds.ab<-metaMDS(decostand(data.metadata2[,-c(1:19)],"total" ),k=6,autotransform=FALSE, na.rm=TRUE)
@@ -249,10 +361,12 @@ head(Limono.data)
 
 NAG.model<-lmer(log(NAG+1)~g__Limonomyces+(1|Block),data=Limono.data,REML=FALSE)
 anova(NAG.model)
-NAG.model2<-lmer(log(NAG+1)~g__Limonomyces+Date+(1|Block),data=Limono.data,REML=FALSE)
+NAG.model4<-lmer(log(NAG+1)~g__Limonomyces+Date+SoilFrac+(1|Block),data=Limono.data,REML=FALSE)
+anova(NAG.model4)
+NAG.model2<-lmer(log(NAG+1)~g__Limonomyces+(1|Date/SoilFrac)+(1|Block),data=Limono.data,REML=FALSE)
 anova(NAG.model2)
 NAG.model3<-lmer(log(NAG+1)~g__Limonomyces*Date+(1|Block),data=Limono.data,REML=FALSE)
 anova(NAG.model3)
-AICtab(NAG.model,NAG.model2,NAG.model3)
+AICtab(NAG.model,NAG.model2,NAG.model3,NAG.model4)
 #Model 3 lowest AIC, Limonomyces P=0.10, can't compare Crop because only appears in P
 

@@ -46,9 +46,15 @@ adonis(data.trans.rar[,-c(1:5)]~data.trans.rar$Date*data.trans.rar$Crop+data.tra
 # ---
 # Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
 
+#Exploring to see which SoilFracs are different from each other
+adonis(data.trans.rar[,-c(1:5)]~data.trans.rar$Date*data.trans.rar$Crop+data.trans.rar$SoilFrac, permutations=9999, data=subset(data.trans.rar, data.trans.rar$SoilFrac=="LM"|SoilFrac=="Micro"))
+
+mds.dist<-metaMDSdist(decostand(data.trans.rar[,-c(1:6)],"pa" ),k=6,autotransform=FALSE)
+SoilFrac.groups<-betadisper(mds.dist, data.trans.rar$SoilFrac, type="median")
+TukeyHSD(SoilFrac.groups)
+#permutest(SoilFrac.groups)
 
 # run this code
-# EBach:  I assume this MDS is for the seqeunce "abundance" data?
 ggplot.NMDS<-function(XX,ZZ,COLORS){
 	library(ggplot2)
 MDS1<-data.frame(scores(XX))$NMDS1
